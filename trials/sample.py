@@ -5,9 +5,10 @@ import socket
 
 def printlist(data, prefix):
     "Simple printer with a prefix"
+    print 20 * "="
     for i in data:
-        print prefix, i
-    
+        print prefix, i.strip()
+    print 20 * "="
 
 def read_request(sock):
     "Read an HTTP request from the local socket"
@@ -24,42 +25,44 @@ def send_request(request, sock):
         sock.send(i)
 
 def read_response(sock):
-    retval = []
-    while True:
-        # r,w,x = None, None, None
-        # print "selecting"
-        # r,w,x, = select.select([sock],[],[],5)
-        # print "selected"
-        # if r:
-        line = sock.readline()
-        print "'%s'"%line.strip()
-        retval.append(line)
-        r,w,x = None, None, None
-        print "selecting"
-        r,w,x, = select.select([sock],[],[],5)
-        print "selected"
-        print r,w,x
-        # else:
-        #     break
-    return retval
+    original = sock.readlines()
+    printval = []
+    # gzbody = False
+    # body = False
+    # for i in original:
+    #     if i.startswith("Content-Encoding:") and i.split(":")[-1].strip() == "gzip":
+    #         gzbody = True
+    #     if i == "\r\n":
+    #         body = True
+    #         continue
+    #     if body:
+    #         print "Writing!"
+    #         fp.write(i)
+    # fp.close()
+    # raise SystemExit
+    return original, printval
 
 def send_response(response, sock):
     for i in response:
         sock.send(i)
         
 def run_server(lsock, rsock):
-    lsock.listen(1)
-    conn,addr = lsock.accept()
-    # conn.setblocking(False)
-    # rsock.setblocking(False)
-    ls_file = conn.makefile("r+")
     while True:
+        lsock.listen(1)
+        conn,addr = lsock.accept()
+        # conn.setblocking(False)
+        # rsock.setblocking(False)
+        ls_file = conn.makefile("r+")
+        print "reading request"
         request = read_request(ls_file)
         printlist(request, "> ")
+        print "sending request"
         send_request(request, rsock)
         rs_file = rsock.makefile()
-        response = read_response(rs_file)
+        print "reading reponse"
+        response,pval = read_response(rs_file)
         printlist(response, "< ")
+        print "sending reponse"
         send_response(response, conn)
 
 def main(lport, remote):
