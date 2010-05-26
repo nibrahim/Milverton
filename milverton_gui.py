@@ -1,12 +1,43 @@
 #!/usr/bin/env python
+
 import wx
 
-class MilvertonFrame(wx.Frame):
-    def __init__(self, parent, title):
-        super(MilvertonFrame,self).__init__(self, parent, title = title, size= (300, 200))
-        
+class Milverton(wx.App):
+    def __init__(self):
+        wx.App.__init__(self, redirect=True)
 
-app = wx.App(False)  # Create a new app, don't redirect stdout/stderr to a window.
-frame = wx.Frame(None, wx.ID_ANY, "Hello World") # A Frame is a top-level window.
-frame.Show(True)     # Show the frame.
-app.MainLoop()
+    def OnInit(self):
+        frame = wx.Frame(None, -1, "Milverton Proxy",
+                         pos=(50,50), size=(400,200),
+                         style=wx.DEFAULT_FRAME_STYLE,
+                         name="Milverton proxy control console")
+        frame.CreateStatusBar()
+
+        menu = wx.Menu()
+        menu.Append(101, "E&xit", "Exit")
+        menubar = wx.MenuBar()
+        menubar.Append(menu, "&File")
+
+        frame.SetMenuBar(menubar)
+        frame.Show(True)
+
+        self.SetTopWindow(frame)
+
+        self.frame = frame
+        return True
+
+
+    def OnExitApp(self, evt):
+        self.frame.Close(True)
+
+
+    def OnCloseFrame(self, evt):
+        if hasattr(self, "window") and hasattr(self.window, "ShutdownDemo"):
+            self.window.ShutdownDemo()
+        evt.Skip()
+
+
+
+if __name__ == "__main__":
+    app = Milverton()
+    app.MainLoop()
